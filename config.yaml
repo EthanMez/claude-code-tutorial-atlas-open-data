@@ -1,0 +1,8 @@
+data:
+  fraction: 0.1 # fraction of data used for analysis (between 0 and 1)
+  lumi: 36.6 # in fb^-1
+
+plotting:
+  save_dir: "plots"
+  mass_range: [80, 170] # in GeV
+  bin_width: 5
