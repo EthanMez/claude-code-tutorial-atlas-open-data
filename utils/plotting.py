@@ -1,7 +1,3 @@
-"""
-Histogram plotting for the H→ZZ*→4ℓ invariant mass distribution.
-"""
-
 import awkward as ak
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,43 +5,17 @@ from matplotlib.ticker import AutoMinorLocator
 
 
 def plot_histogram(all_data, samples, save_dir, mass_range, bin_width, lumi, fraction):
-    """
-    Create and save a stacked histogram of the four-lepton invariant mass.
-
-    Plots data points with statistical error bars on top of stacked MC
-    backgrounds, with the Higgs signal overlaid on top.
-
-    Parameters
-    ----------
-    all_data : dict
-        Processed event arrays keyed by sample name (output of data_loader).
-    samples : dict
-        Sample metadata (colour, file list, etc.) keyed by sample name.
-    save_dir : str
-        Directory path where the output PDF will be saved.
-    mass_range : list of float
-        [min, max] of the invariant mass axis in GeV.
-    bin_width : float
-        Histogram bin width in GeV.
-    lumi : float
-        Full integrated luminosity in fb⁻¹ (used for the axis label).
-    fraction : float
-        Fraction of data processed (used to compute effective luminosity label).
-    """
     xmin, xmax = mass_range
     bin_edges = np.arange(xmin, xmax + bin_width, bin_width)
     bin_centres = (bin_edges[:-1] + bin_edges[1:]) / 2
 
-    # --- Data ---
     data_counts, _ = np.histogram(ak.to_numpy(all_data['Data']['mass']), bins=bin_edges)
     data_stat_errors = np.sqrt(data_counts)
 
-    # --- Signal ---
     signal_masses  = ak.to_numpy(all_data[r'Signal ($m_H$ = 125 GeV)']['mass'])
     signal_weights = ak.to_numpy(all_data[r'Signal ($m_H$ = 125 GeV)'].totalWeight)
     signal_color   = samples[r'Signal ($m_H$ = 125 GeV)']['color']
 
-    # --- MC backgrounds ---
     mc_masses  = []
     mc_weights = []
     mc_colors  = []
@@ -58,19 +28,14 @@ def plot_histogram(all_data, samples, save_dir, mass_range, bin_width, lumi, fra
             mc_colors.append(samples[sample_name]['color'])
             mc_labels.append(sample_name)
 
-    # ------------------------------------------------------------------
-    # Main plot
-    # ------------------------------------------------------------------
     fig, main_axes = plt.subplots(figsize=(12, 8))
 
-    # Data points
     main_axes.errorbar(
         x=bin_centres, y=data_counts, yerr=data_stat_errors,
-        fmt='ko',  # black circles
+        fmt='ko', 
         label='Data',
     )
 
-    # Stacked MC backgrounds
     mc_histogram = main_axes.hist(
         mc_masses, bins=bin_edges,
         weights=mc_weights, stacked=True,
@@ -78,7 +43,6 @@ def plot_histogram(all_data, samples, save_dir, mass_range, bin_width, lumi, fra
     )
     mc_stacked_counts = mc_histogram[0][-1]
 
-    # MC statistical uncertainty: √(Σw²) per bin
     mc_stat_uncertainty = np.sqrt(
         np.histogram(
             np.hstack(mc_masses), bins=bin_edges,
@@ -86,7 +50,6 @@ def plot_histogram(all_data, samples, save_dir, mass_range, bin_width, lumi, fra
         )[0]
     )
 
-    # Signal on top of backgrounds
     main_axes.hist(
         signal_masses, bins=bin_edges,
         bottom=mc_stacked_counts,
@@ -94,7 +57,6 @@ def plot_histogram(all_data, samples, save_dir, mass_range, bin_width, lumi, fra
         label=r'Signal ($m_H$ = 125 GeV)',
     )
 
-    # Statistical uncertainty band
     main_axes.bar(
         bin_centres,
         2 * mc_stat_uncertainty,
@@ -104,9 +66,6 @@ def plot_histogram(all_data, samples, save_dir, mass_range, bin_width, lumi, fra
         label='Stat. Unc.',
     )
 
-    # ------------------------------------------------------------------
-    # Axes formatting
-    # ------------------------------------------------------------------
     main_axes.set_xlim(left=xmin, right=xmax)
     main_axes.set_ylim(bottom=0, top=np.amax(data_counts) * 2.0)
 
@@ -124,9 +83,6 @@ def plot_histogram(all_data, samples, save_dir, mass_range, bin_width, lumi, fra
         y=1, horizontalalignment='right',
     )
 
-    # ------------------------------------------------------------------
-    # Annotations
-    # ------------------------------------------------------------------
     effective_lumi_label = str(lumi * fraction)
 
     plt.text(0.1, 0.93, 'ATLAS Open Data',

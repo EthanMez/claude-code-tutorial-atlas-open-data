@@ -6,9 +6,15 @@ dist/
 build/
 .venv/
 .env
+.hzz
+
+# Claude 
+.claude/
+CLAUDE.local.md
 
 # Analysis outputs
 plots/
+data/
 *.root
 
 # macOS

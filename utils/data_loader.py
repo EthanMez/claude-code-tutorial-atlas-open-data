@@ -1,7 +1,3 @@
-"""
-Loads ATLAS Open Data samples and applies event selections.
-"""
-
 import time
 
 import atlasopenmagic as atom
@@ -11,34 +7,12 @@ import uproot
 from utils.selections import Selections
 
 
-def data_loader(apply_selections=True, lumi=36.6, fraction=1.0):
-    """
-    Download and process ATLAS Open Data samples for the H→ZZ*→4ℓ analysis.
-
-    Parameters
-    ----------
-    apply_selections : bool
-        Whether to apply event selection cuts. Default True.
-    lumi : float
-        Integrated luminosity in fb⁻¹ used for MC weight normalisation.
-    fraction : float
-        Fraction of each file to process (0–1). Useful for quick tests.
-
-    Returns
-    -------
-    all_data : dict
-        Dictionary mapping sample name → awkward array of selected events.
-    samples : dict
-        Dictionary mapping sample name → metadata (file list, colour, etc.)
-        as returned by atlasopenmagic.
-    """
+def data_loader(apply_selections=True, lumi=36.6, fraction=1.0, mode='full'):
     atom.available_releases()
     atom.set_release('2025e-13tev-beta')
 
-    # Require exactly 4 leptons in the final state
     skim = "exactly4lep"
 
-    # Dataset IDs (DIDs) for each physics process
     sample_definitions = {
         r'Data': {
             'dids': ['data']
@@ -68,6 +42,11 @@ def data_loader(apply_selections=True, lumi=36.6, fraction=1.0):
 
     if apply_selections:
 
+        if mode == 'test':
+            print("Running in test mode: processing only the first file of each sample.")
+            for sample_name in samples:
+                samples[sample_name]['list'] = samples[sample_name]['list'][:1]
+
         for sample_name in samples:
             print(f'Processing {sample_name} samples')
 
@@ -80,7 +59,7 @@ def data_loader(apply_selections=True, lumi=36.6, fraction=1.0):
 
                 tree = uproot.open(file_path + ":analysis")
 
-                sample_data = []
+                processed_batches = []
                 selec = Selections(lumi=lumi)
 
                 for batch in tree.iterate(
@@ -89,12 +68,14 @@ def data_loader(apply_selections=True, lumi=36.6, fraction=1.0):
                     entry_stop=tree.num_entries * fraction,
                 ):
                     n_events_in = len(batch)
-                    sample_data, n_events_after_cuts = selec.apply_cuts(sample_name, file_path, batch)
+                    batch_data, n_events_after_cuts = selec.apply_cuts(sample_name, file_path, batch)
+                    processed_batches.extend(batch_data)
 
                     elapsed = time.time() - start_time
                     print(f'\t\t nIn: {n_events_in},\t nOut: \t{n_events_after_cuts}\t in {round(elapsed, 1)}s')
 
-                event_batches.append(ak.concatenate(sample_data))
+                if processed_batches:
+                    event_batches.append(ak.concatenate(processed_batches))
 
             all_data[sample_name] = ak.concatenate(event_batches)
 
