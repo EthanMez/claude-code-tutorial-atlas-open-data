@@ -7,11 +7,11 @@ Most of the tips below come from the following sources:
 - https://www.youtube.com/playlist?list=PL4cUxeGkcC9g4YJeBqChhFJwKQ9TRiivY
 
 
-# Pre-requisites
+## Pre-requisites
 
 The only pre-requisities to this tutorial are Claude Code, installed using [official instructions](https://code.claude.com/docs/en/quickstart), and Python (3.8+). 
 
-# Initialization
+## Initialization
 
 Claude Code is most effectively run inside of a specific folder containing a project. Once this repository is pulled, navigate to the project in the terminal. Then, open up Claude Code using:
 
@@ -26,7 +26,7 @@ A variety of Claude commands can be accessed using the forward slash `/`. One of
 ```
 The command `/init` initializes Claude to look through the entire project folder, summarize the architecture and workflow, and create a `CLAUDE.md` file, which it will later reference for guidance. More on `CLAUDE.md` files will be introduced later. 
 
-## Hooks 
+### Hooks 
 
 Hooks are user-defined "handlers" (terminal commands, Claude prompts, sub-agent spawn, etc.) that fire automatically in Claude Code's execution cycle. 
 
@@ -70,7 +70,7 @@ In the terminal or an editor, paste this in the settings.json file:
 ```
 This will display a notification message and sound on macOS at the "Stop" and "Notification" hook-points. To customize further, simply ask Claude.
 
-## Shortcuts
+### Shortcuts
 
 Here are some useful shortcuts:
 - `shift+tab` (or `alt+m` on Windows): toggles between "default", "accept edits" (Claude doesn't ask permission), "planning" (Claude outlines plan before executing), and "auto" (Claude itself checks for risky commands automatically)
@@ -80,7 +80,7 @@ Here are some useful shortcuts:
 - `!`: enters `bash` mode; Claude executes exactly what you type into the prompt box
 - `#`: can add something you want Claude to remember long-term (i.e. can add information into the `CLAUDE.md` file, which we'll get to soon)
 
-## Slash Commands
+### Slash Commands
 
 There are MANY of these, but here are some essential ones:
 - `/clear`: clears entire context, which is helpful when transitioning to a new task
@@ -152,11 +152,11 @@ Add to the arxiv-hep-ex skill to only identify papers that, more or less, align 
 
 Once saved, the skill will be activated every time I ask Claude to "summarize recent arxiv papers."
 
-## Course Correcting 
+### Course Correcting 
 
 If Claude is not doing what you want it to do (e.g. you typed `/comment <file>` for the wrong file), press `esc` at any point---don't be afraid to interrupt! 
 
-# Memory
+## Memory
 
 Here, we introduce `CLAUDE.md` files in a bit more detail! Probably one of the most important features of Claude Code is *memory*. The `CLAUDE.md` file provides useful information for Claude to reference whenever working on a given project---any repetitive prompts, stylistic preferences, validation techniques, previous errors, etc. can be detailed here to prevent mistakes and save time. Each time Claude Code is opened, the `CLAUDE.md` file is read.  
 
@@ -186,7 +186,7 @@ Do not probe the `HZZAnalysis.ipynb` notebook; it isn't relevant. It's included 
 
 During development, if Claude ever makes a preventable mistake, you can either add a memory regarding the mistake by asking Claude to do so, by using `#`, or manually. 
 
-## Types of CLAUDE.md Files
+### Types of CLAUDE.md Files
 
 Depending on where a given `CLAUDE.md` file is stored, its scope changes. Here are the main options:
 - **Home folder** (`~/.claude/CLAUDE.md`): Applies to all Claude sessions on your computer
@@ -194,7 +194,7 @@ Depending on where a given `CLAUDE.md` file is stored, its scope changes. Here a
 - **Project root (personal)** (`<project-dir>/CLAUDE.local.md`): Claude memory for specific project, only for you (needs to be added to `.gitignore`)
 - **Child directories** (`<project-dir>/<sub-dir>/CLAUDE.md`): Claude memory for a specific directory within a project; Claude automatically pulls these "child" memory files when working with files inside these directories
 
-# Model Context Protocol (MCP)
+## Model Context Protocol (MCP)
 
 MCPs are another very important feature of Claude Code---they allow AI models to connect with external data sources and tools. When deploying an LLM in a given project directory, it acquires details about local files, but cannot easily interact with external databases or third-party services. MCPs provide Claude the necessary context and commands to reach out to an external database---they function as "middle men". However, if each app/tool/company used different MCPs, there would be no standarized way to establish a connection or interaction. Anthropic solved this by creating *MCP Servers*. 
 
@@ -216,11 +216,11 @@ You can install them manually, but let's ask Claude to do it for us:
 Install the Playwright and Context7 MCPs. 
 ```
 
-# Sub-Agents
+## Sub-Agents
 
 For different aspects of the development workflow, you can create an isolated *subagent*. Each have their own system prompts, tools they're allowed to use, and unique context window, reducing context overload in main session. The main Claude Code agent that you interact with during a session can delegate tasks to subagents, acting as a "senior developer". 
 
-## Modifying the pT Thresholds
+### Modifying the pT Thresholds
 
 A good first change to try is adjusting the lepton transverse momentum (pT) thresholds in `utils/selections.py`. These three lines control the minimum pT required for the three leading leptons:
 
@@ -239,7 +239,7 @@ data = data[data['leading_lep_pt']       > 25]   # tightened from 20 GeV
 
 The Higgs peak at 125 GeV should remain visible but with fewer events. Loosening the thresholds admits more events but increases background contamination.
 
-## Analysis Validation Agent
+### Analysis Validation Agent
 
 After modifying the thresholds (or any other part of the analysis), delegate the validation to an isolated subagent rather than running it in your main session. This keeps test output out of your working context and lets you continue developing while the check runs.
 
@@ -265,7 +265,7 @@ Additionally, you can add the following to your `CLAUDE.md` file:
 If any physics cuts in `utils/selections.py` are changed during development, **run the validation subagent**. 
 ```
 
-# Additional Tips 
+## Additional Tips 
 
 - **Keep context clean.** If context gets cluttered, Claude will perform poorly; put time into sculpting a precise `CLAUDE.md` file, defining the task, and adding the correct directories/files and information into the prompt. When moving onto a new task, `/clear` the context. 
 - You can run Claude in multiple terminals simultaneously; this can be useful when working on multiple features or projects 
