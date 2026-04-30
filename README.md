@@ -16,25 +16,25 @@ The only pre-requisities to this tutorial are Claude Code, installed using [offi
 Claude Code is most effectively run inside of a specific folder containing a project. Once this repository is pulled, navigate to the project in the terminal. Then, open up Claude Code using:
 
 ```bash
-> claude
+claude
 ```
 
 A variety of Claude commands can be accessed using the forward slash `/`. One of the first recommended commands to run are:
 ```bash
-> /terminal-setup # this allows for new lines to be added in the prompt using shift+enter
-> /init
+/terminal-setup # this allows for new lines to be added in the prompt using shift+enter
+/init
 ```
-The command `/init` initializes Claude to look through the entire project folder, summarize the architecture and workflow, and create a `CLAUDE.md` file, which it will later reference for guidance. 
+The command `/init` initializes Claude to look through the entire project folder, summarize the architecture and workflow, and create a `CLAUDE.md` file, which it will later reference for guidance. More on `CLAUDE.md` files will be introduced later. 
 
 ## Hooks 
 
 Hooks are user-defined "handlers" (terminal commands, Claude prompts, sub-agent spawn, etc.) that fire automatically in Claude Code's execution cycle. 
 
-**WARNING**: Hooks run without verification. Therefore, ensure that the executed command is safe. 
+**WARNING**: Hooks run without verification. Ensure that the executed commands are safe. 
 
-One useful way to use hooks is to send a notification when Claude needs input or is finished working; that way, you can work on other things in parallel without having to continually check back. 
+One useful way to use hooks is to send a notification when Claude needs your approval or is finished working; that way, you can work on other things in parallel without having to continually check back and forth. 
 
-To do this, you can either ask Claude or enter the following:
+To do this, you can ask Claude directly; however, for illustrative purposes, let's do it manually. Do following in a regular terminal:
 ```bash
 cd ~/.claude # navigate the .claude folder in your root directory
 vim settings.json # create a settings config, if not already made 
@@ -68,29 +68,30 @@ In the terminal or an editor, paste this in the settings.json file:
 }
 
 ```
+This will display a notification message and sound on macOS at the "Stop" and "Notification" hook-points. To customize further, simply ask Claude.
 
 ## Shortcuts
 
 Here are some useful shortcuts:
-- `shift+tab`: toggles between "default", "accept edits" (Claude doesn't ask permission), "planning" (Claude outlines plan before executing), and "auto" (Claude itself checks for risky commands automatically)
+- `shift+tab` (or `alt+m` on Windows): toggles between "default", "accept edits" (Claude doesn't ask permission), "planning" (Claude outlines plan before executing), and "auto" (Claude itself checks for risky commands automatically)
 - `esc`: interrupts. While interrupted, can press the "up" arrow to allow Claude to resume task, or enter prompts to re-orient it
 - `esc+esc`: clears prompt box, if something is there. If empty, can clear history up to specified point (helps with decluttering and Claude's focus)
 - `@`: adds file or directory to context 
 - `!`: enters `bash` mode; Claude executes exactly what you type into the prompt box
-- `#`: can add something you want Claude to remember long-term (i.e. can add information into the CLAUDE.md file, which we'll get to soon)
+- `#`: can add something you want Claude to remember long-term (i.e. can add information into the `CLAUDE.md` file, which we'll get to soon)
 
 ## Slash Commands
 
 There are MANY of these, but here are some essential ones:
-- `/add-dir`: adds another working directory to the context window
 - `/clear`: clears entire context, which is helpful when transitioning to a new task
 - `/compact`: clears history, while summarizing it so that the info is still accessible
 - `/model`: change model
 - `/resume`: lists old sessions; you can choose one and start where you left off 
+- `/add-dir`: adds another working directory to the context window
 - `/help`: if you forget anything or want to explore commands, they can be listed with this command
 - `/btw`: can ask Claude a quick side question without cluttering context
 
-You can also create **custom** commands! To do this, navigate to the `/.claude` folder in your *project* directory, create a folder called `commands`, and within that folder create a `<command>.md` file:
+You can also create **custom** commands! To do this, you just ask Claude to define a command for you, but again for illustrative purposes, let's do it manually. Navigate to the `/.claude` folder in your project (or root) directory, create a folder called `commands`, and within that folder create a `<command>.md` file:
 ```bash
 mkdir -p .claude/commands
 cd .claude/commands
@@ -135,11 +136,9 @@ For shorter functions, add a one-line description.
 
 Next, try running the `/comment` command; Claude should begin automatically commenting the entire project!
 
-**However**: Instead of manually creating each command, you should ask Claude to do it!
-
 ### Skills 
 
-In a similar fashion to slash commands, you can add *skills*, which function almost identically except without a corresponding slash command. Instead of invoking the routine using a slash command, Claude automatically infers what skill to use based on the prompt. 
+In a similar fashion to slash commands, you can add *skills*, which function almost identically except without a corresponding slash command to call. Instead of invoking the routine using a slash command, Claude automatically infers what skill to use based on the prompt. 
 
 I haven't tested this in a coding context, but for repetitive daily tasks (accomplished either through **Code** or **Cowork**), this can be useful. For example, I typed the following prompt into Cowork:
 
@@ -155,11 +154,11 @@ Once saved, the skill will be activated every time I ask Claude to "summarize re
 
 ## Course Correcting 
 
-If Claude is not doing what you want it to do (e.g. you typed /comment <file> for the wrong file), press `esc` at any point---don't be afraid to interrupt! 
+If Claude is not doing what you want it to do (e.g. you typed `/comment <file>` for the wrong file), press `esc` at any point---don't be afraid to interrupt! 
 
 # Memory
 
-Probably one of the most important features of Claude Code is *memory*. The `CLAUDE.md` file provides useful information for Claude to reference whenever working on a given project---any repetitive prompts, stylistic preferences, validation techniques, previous errors, etc. can be detailed here to prevent mistakes and save time. Each time Claude Code is opened, the `CLAUDE.md` file is read.  
+Here, we introduce `CLAUDE.md` files in a bit more detail! Probably one of the most important features of Claude Code is *memory*. The `CLAUDE.md` file provides useful information for Claude to reference whenever working on a given project---any repetitive prompts, stylistic preferences, validation techniques, previous errors, etc. can be detailed here to prevent mistakes and save time. Each time Claude Code is opened, the `CLAUDE.md` file is read.  
 
 Running `/init` creates a `CLAUDE.md` file which can be modified. Claude should be provided with "never do ..." and "always do ..." directions with specific examples. Here's something we can try adding to the `CLAUDE.md` file:
 
@@ -173,7 +172,7 @@ python analysis.py --config --mode test
 
 # Environment 
 
-Before running any code, check that the `hzz` environment (either from Conda or venv) is activated. If it's not activated, notify the user before continuing. 
+Before running any code, check that the `hzz` environment (either from Conda or venv) is activated. If it's not activated, notify the user, and activate it yourself. 
 
 The environment is prepared using the `prepare_env.py` script. Do not add more package installation lines to this file; all necessary packages are installed using the `install_from_environment()` command. 
 
@@ -183,7 +182,9 @@ Do not probe the `HZZAnalysis.ipynb` notebook; it isn't relevant. It's included 
 
 ```
 
-During development, if Claude ever makes a preventable mistake, you can either add a memory regarding the mistake using a prompt, using `#`, or manually. 
+**NOTE**: Claude roughly prioritizes information in the `CLAUDE.md` file *sequentially* (starts from the top).
+
+During development, if Claude ever makes a preventable mistake, you can either add a memory regarding the mistake by asking Claude to do so, by using `#`, or manually. 
 
 ## Types of CLAUDE.md Files
 
@@ -252,7 +253,7 @@ Spawn a subagent that does the following:
 4. Returns a short pass/fail report to the main session.
 ```
 
-Claude will delegate the task to a background agent with its own Bash and Playwright tools. Once it finishes, it reports back — the validation noise never touches your main context window.
+Claude will delegate the task to a background agent with its own Bash and Playwright tools. Once it finishes, it reports back---the validation noise never touches your main context window.
 
 > **Tip:** If the peak shifts or disappears after a threshold change, the cut is likely too aggressive. Revert or loosen it and re-run the agent.
 
@@ -261,7 +262,7 @@ Additionally, you can add the following to your `CLAUDE.md` file:
 ```
 # Validation 
 
-If any physics cuts in `utils/selections.py` are changed, **run the validation subagent**. 
+If any physics cuts in `utils/selections.py` are changed during development, **run the validation subagent**. 
 ```
 
 # Additional Tips 
@@ -356,7 +357,7 @@ All runtime parameters live in `config.yaml`:
 
 ## Physics overview
 
-The four-lepton final state (4e, 2e2μ, 4μ) provides an extremely clean signature for $H \rightarrow ZZ^* \rightarrow 4\ell$ because of its low background rate and fully reconstructible kinematics. The selection requires:
+The four-lepton final state ($4e$, $2e2\mu$, $4\mu$) provides an extremely clean signature for $H \rightarrow ZZ^* \rightarrow 4\ell$ because of its low background rate and fully reconstructible kinematics. The selection requires:
 
 - Electron or muon trigger fired
 - At least one trigger-matched lepton
