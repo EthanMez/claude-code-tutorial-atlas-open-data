@@ -9,12 +9,20 @@ def plot_histogram(all_data, samples, save_dir, mass_range, bin_width, lumi, fra
     bin_edges = np.arange(xmin, xmax + bin_width, bin_width)
     bin_centres = (bin_edges[:-1] + bin_edges[1:]) / 2
 
-    data_counts, _ = np.histogram(ak.to_numpy(all_data['Data']['mass']), bins=bin_edges)
+    data_key   = 'Data'
+    signal_key = r'Signal ($m_H$ = 125 GeV)'
+
+    if data_key in all_data:
+        data_counts, _ = np.histogram(ak.to_numpy(all_data[data_key]['mass']), bins=bin_edges)
+    else:
+        data_counts = np.zeros(len(bin_edges) - 1, dtype=int)
     data_stat_errors = np.sqrt(data_counts)
 
-    signal_masses  = ak.to_numpy(all_data[r'Signal ($m_H$ = 125 GeV)']['mass'])
-    signal_weights = ak.to_numpy(all_data[r'Signal ($m_H$ = 125 GeV)'].totalWeight)
-    signal_color   = samples[r'Signal ($m_H$ = 125 GeV)']['color']
+    has_signal = signal_key in all_data
+    if has_signal:
+        signal_masses  = ak.to_numpy(all_data[signal_key]['mass'])
+        signal_weights = ak.to_numpy(all_data[signal_key].totalWeight)
+        signal_color   = samples[signal_key]['color']
 
     mc_masses  = []
     mc_weights = []
@@ -22,7 +30,7 @@ def plot_histogram(all_data, samples, save_dir, mass_range, bin_width, lumi, fra
     mc_labels  = []
 
     for sample_name in samples:
-        if sample_name not in ['Data', r'Signal ($m_H$ = 125 GeV)']:
+        if sample_name not in [data_key, signal_key] and sample_name in all_data:
             mc_masses.append(ak.to_numpy(all_data[sample_name]['mass']))
             mc_weights.append(ak.to_numpy(all_data[sample_name].totalWeight))
             mc_colors.append(samples[sample_name]['color'])

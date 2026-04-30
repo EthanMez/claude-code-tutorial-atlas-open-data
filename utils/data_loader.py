@@ -43,9 +43,11 @@ def data_loader(apply_selections=True, lumi=36.6, fraction=1.0, mode='full'):
     if apply_selections:
 
         if mode == 'test':
-            print("Running in test mode: processing only the first file of each sample.")
-            for sample_name in samples:
-                samples[sample_name]['list'] = samples[sample_name]['list'][:1]
+            print("Running in test mode: processing first file of the 3 most populous samples.")
+            top3 = sorted(samples, key=lambda k: len(samples[k]['list']), reverse=True)[:3]
+            samples = {k: samples[k] for k in top3}
+            for k in samples:
+                samples[k]['list'] = samples[k]['list'][:1]
 
         for sample_name in samples:
             print(f'Processing {sample_name} samples')
@@ -57,11 +59,28 @@ def data_loader(apply_selections=True, lumi=36.6, fraction=1.0, mode='full'):
                 start_time = time.time()
                 print(f'\t{file_path}:')
 
-                tree = uproot.open(file_path + ":analysis")
+                print(f'\t\t Loading data from file...')
+
+                tree = None
+                for attempt in range(3):
+                    try:
+                        tree = uproot.open(file_path + ":analysis")
+                        break
+                    except Exception as e:
+                        if attempt < 2:
+                            print(f'\t\t Attempt {attempt + 1} failed ({type(e).__name__}). Retrying...')
+                            time.sleep(5)
+                        else:
+                            print(f'\t\t Failed to open after 3 attempts. Skipping file.')
+                if tree is None:
+                    continue
+
+                print(f'\t\t Applying selections and processing events...')
 
                 processed_batches = []
                 selec = Selections(lumi=lumi)
 
+                print(f'\t\t Processing events in batches...')
                 for batch in tree.iterate(
                     selec.variables + selec.weight_variables + ["sum_of_weights", "lep_n"],
                     library="ak",
@@ -75,8 +94,12 @@ def data_loader(apply_selections=True, lumi=36.6, fraction=1.0, mode='full'):
                     print(f'\t\t nIn: {n_events_in},\t nOut: \t{n_events_after_cuts}\t in {round(elapsed, 1)}s')
 
                 if processed_batches:
+                    print("LENGTH OF BATCH DATA: ", len(processed_batches))
                     event_batches.append(ak.concatenate(processed_batches))
 
-            all_data[sample_name] = ak.concatenate(event_batches)
+            if event_batches:
+                all_data[sample_name] = ak.concatenate(event_batches)
+            else:
+                print(f'\t Warning: no data loaded for {sample_name}, skipping.')
 
     return all_data, samples
